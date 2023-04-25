@@ -3,9 +3,12 @@ import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import seaborn as sn
+import pandas as pd
 from datetime import datetime
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import img_to_array
+
+Legend = cv2.imread('Legend.png')
 
 # Load the pre-trained emotion recognition model (e.g., VGG19, ResNet, etc.)
 emotion_model_path = 'fer2013_mini_XCEPTION.119-0.65.hdf5'
@@ -14,7 +17,7 @@ emotion_classifier = load_model(emotion_model_path)
 emotion_labels = ["angry", "disgust", "fear", "happy", "neutral", "sad", "surprise"]
 
 emotion_counts = {"angry": 0, "disgust": 0, "fear": 0, "happy": 0, "neutral": 0, "sad": 0, "surprise": 0}
-heatmap_labels = {"angry": 0, "disgust": 1, "fear": 2, "happy": 3, "neutral": 4, "sad": 5, "surprise": 6}
+heatmap_labels = {"angry": 0, "disgust": 10, "fear": 20, "happy": 30, "neutral": 40, "sad": 50, "surprise": 60}
 tick_labels = []
 emotion_timestamps = []
 
@@ -44,7 +47,7 @@ def detect_faces_and_emotions(frame):
         # Counting emotions
         emotion_counts[emotion_label] += 1
         emotion_timestamps.append(heatmap_labels[emotion_label])
-        tick_labels.append(str(timestamp))
+        tick_labels.append(timestamp.total_seconds() // 60)
     return frame
 
 # # Process the video file
@@ -73,11 +76,19 @@ end = datetime.now()
 
 elapsed_time = (end-start)
 
+df = pd.DataFrame([emotion_timestamps],columns=tick_labels)
 
-hm = sn.heatmap(data=[emotion_timestamps],
-                xticklabels = False,
-                yticklabels = False)
-plt.show()
+plt.figure(1)
+
+
+hm = sn.heatmap(data=df,
+                xticklabels = 600,
+                yticklabels = False,
+                cbar = True)
+plt.xlabel("Minutes")
+
+
+plt.figure(2)
 
 plt.bar(emotion_counts.keys(), emotion_counts.values())
 plt.title("Emotion Quantities")
